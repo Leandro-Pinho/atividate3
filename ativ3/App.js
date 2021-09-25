@@ -16,7 +16,7 @@ class Items extends React.Component {
 
   render(){
 
-    const { donne: doneHeading } = this.props;
+    const { done: doneHeading } = this.props;
     const { items } = this.state;
     const heading = doneHeading ? "Concluido" : "Para Fazer";
 
@@ -27,7 +27,7 @@ class Items extends React.Component {
     return (
       <View style={styles.container}>
         <Text>{heading}</Text>
-        {items.map(({id, done, value}) => (
+        {Items.map(({id, done, value}) => (
           <TouchableHighlight
             key={id}
             onPress = {this.props.onPressItem && this.props.onPressItem(id)} >
