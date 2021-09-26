@@ -92,6 +92,7 @@ export default class App extends Component {
           </View>
       
         <View style={{margin: 20}}>
+          <Text>Prazo para fazer</Text>
           <DatePicker
             style={{width: 200}}
             date={this.state.date}
