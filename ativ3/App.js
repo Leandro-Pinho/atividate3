@@ -1,14 +1,14 @@
-import React from 'react';
+import React, {Component} from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, View } from 'react-native';
-import { constants } from 'expo-constants';
+import  Constants  from 'expo-constants';
 import * as SQLite from 'expo-sqlite';
 
-const db = SQLite.openDatabase('banco.sqlite');
+const db = SQLite.openDatabase('banco.db');
 
-class Items extends React.Component {
+class Items extends Component {
   state = {
     items: null
-  }
+  };
   
   componentDidMount(){
     this.update();
@@ -21,68 +21,79 @@ class Items extends React.Component {
     const heading = doneHeading ? "Concluido" : "Para Fazer";
 
     if (items === null || items.length === 0){
-      return null
+      return null;
     }
 
     return (
-      <View style={styles.container}>
-        <Text>{heading}</Text>
-        {Items.map(({id, done, value}) => (
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionHeading}>
+          {heading}
+        </Text>
+        {items.map(({id, done, value}) => (
           <TouchableHighlight
             key={id}
-            onPress = {this.props.onPressItem && this.props.onPressItem(id)} >
-              <Text>{value}</Text>
+            onPress = {() => this.props.onPressItem && this.props.onPressItem(id)} 
+            style={{
+              backgroundColor: done ? "#1c9963" : "#cc0000",
+              borderColor: "#000",
+              borderColor: 1,
+              padding: 8
+            }}
+            >
+              <Text style={{ color: done ? "#fff" : "#000" }}>{value}</Text>
           </TouchableHighlight>
         ))}
-
       </View>
     );
   }
 
   update(){
     db.transaction(tx => {
+      tx.executeSql(
       `SELECT * FROM items WHERE done = ?;`,
       [this.props.done ? 1 : 0],
-      (_, {rows: { _array }}) => this.setState({items: _array})
-    })
+      (_, {rows: { _array } }) => this.setState({ items: _array })
+      );
+    });
   }
 
 }
-export default class App extends React.Component {
+export default class App extends Component {
   state = {
-    texto: null
-  }
+    text: null
+  };
 
   componentDidMount(){
     db.transaction(tx => {
       tx.executeSql(
-        'CREATE TABLE IF NOT EXISTS items (id integer primary key not null, done int, value text);'
-      )
-    })
+        `CREATE TABLE IF NOT EXISTS items (id integer primary key not null, done int, value text);`
+      );
+    });
   }
 
   render(){
     return (
       <View style={styles.container}>
-        <Text>Lista de afazeres</Text>
-        <View>
+        <Text style={styles.heading}>Lista de afazeres</Text>
+        <View style={styles.flexRow}>
           <TextInput style={styles.input}
-            onChangeText={text => this.setState({texto: text})}
-            value={this.state.texto}
+            onChangeText={text => this.setState({ text })}
             onSubmitEditing={() => {
-              this.add(this.state.texto)
-              this.setState({texto:null})
+              this.add(this.state.text)
+              this.setState({ text:null })
             }}
+            placeholder="O que eu tenho que fazer?"
+            value={this.state.text}
           />
         </View>
-        <ScrollView>
+        <ScrollView style={styles.listArea}>
           <Items 
             done={false}
             ref={todo => (this.todo = todo)}
-            onPressItem={id => 
+            onPressItem={(id) => 
               db.transaction(
                 tx => {
-                  tx.executeSql(`UPDATE items SET done = 1 WHWRE id = ?;`, [id])
+                  tx.executeSql(`UPDATE items SET done = 1 WHERE id = ?;`, [id])
                 },null,this.update
               )
             }
@@ -90,7 +101,7 @@ export default class App extends React.Component {
           <Items
           done={true}
           ref={done => (this.done = done)}
-          onPressItem={id =>
+          onPressItem={(id) =>
             db.transaction(tx => {
               tx.executeSql(`DELETE FROM items WHERE id = ?;`, [id])
             },null,this.update
@@ -103,37 +114,57 @@ export default class App extends React.Component {
   }
 
   add(text){
-    if(text === null || text === ''){
+    if(text === null || text === ""){
       return false
     }
 
     db.transaction(tx => {
-      tx.executeSql(`INSERT INTO items (done, value) VALUE (0,?);`, [text])
-    
+      tx.executeSql(`INSERT INTO items (done, value) VALUES (0,?);`, [text])
       tx.executeSql(`SELECT * FROM items;`, [], (_, {rows}) => console.log(JSON.stringify(rows))
-      )
+      );
       },null, this.update
-    )
+    );
   }
   update = () => {
     this.todo && this.todo.update();
-    this.done && this.todo.update();
-  }
+    this.done && this.done.update();
+  };
 }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 70,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: Constants.statusBarHeight
   },
-  text: {
-    marginTop: 10,
-    color: '#772ea2',
+  heading: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
+  flexRow: {
+    flexDirection: "row"
   },
   input: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#772ea2',
+    borderColor: "#4630eb",
+    borderRadius: 4,
+    borderWidth: 1,
+    flex: 1,
+    height: 48,
+    margin: 16,
+    padding: 8
   },
+  listArea: {
+    backgroundColor: "#f0f0f0",
+    flex: 1,
+    paddingTop: 16
+  },
+  sectionContainer: {
+    marginBottom: 16,
+    marginHorizontal: 16
+  },
+  sectionHeading: {
+    fontSize: 18,
+    marginBottom: 8,
+
+  }
 });
