@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, View, Button } from 'react-native';
 import  Constants  from 'expo-constants';
 import * as SQLite from 'expo-sqlite';
+import DatePicker from 'react-native-datepicker';
 
-const db = SQLite.openDatabase('banco.db');
+const db = SQLite.openDatabase('banco4.db');
 
 class Items extends Component {
   state = {
@@ -29,8 +30,9 @@ class Items extends Component {
         <Text style={styles.sectionHeading}>
           {heading}
         </Text>
-        {items.map(({id, done, value}) => (
+        {items.map(({id, done, value, date}) => (
           <TouchableHighlight
+            
             key={id}
             onPress = {() => this.props.onPressItem && this.props.onPressItem(id)} 
             style={{
@@ -40,7 +42,8 @@ class Items extends Component {
               padding: 8
             }}
             >
-              <Text style={{ color: done ? "#fff" : "#000" }}>{value}</Text>
+              
+              <Text style={{ color: done ? "#fff" : "#000" }}>{value}{date}</Text>
           </TouchableHighlight>
         ))}
       </View>
@@ -60,8 +63,13 @@ class Items extends Component {
 }
 export default class App extends Component {
   state = {
-    text: null
+    text: null,
+    date: '',
   };
+
+  selectDate = (date) => {
+    this.setState({date: date});
+  }
 
   componentDidMount(){
     db.transaction(tx => {
@@ -74,18 +82,34 @@ export default class App extends Component {
   render(){
     return (
       <View style={styles.container}>
-        <Text style={styles.heading}>Lista de afazeres</Text>
+        <Text style={styles.heading}>Lista de Tarefas</Text>
         <View style={styles.flexRow}>
           <TextInput style={styles.input}
             onChangeText={text => this.setState({ text })}
-            onSubmitEditing={() => {
-              this.add(this.state.text)
-              this.setState({ text:null })
-            }}
             placeholder="O que eu tenho que fazer?"
             value={this.state.text}
           />
+          </View>
+      
+        <View style={{margin: 20}}>
+          <DatePicker
+            style={{width: 200}}
+            date={this.state.date}
+            format="DD-MM-YYYY"
+            minDate="10-07-2019"
+            onDateChange={this.selectDate}
+            date={this.state.date}
+          />
         </View>
+        <Button 
+          title="Salvar"
+          onPress={() => {
+            this.add((this.state.text))
+            this.add((this.state.date))
+            this.setState({ text:null })
+          }}
+        />
+            
         <ScrollView style={styles.listArea}>
           <Items 
             done={false}
@@ -132,6 +156,7 @@ export default class App extends Component {
 }
 const styles = StyleSheet.create({
   container: {
+    margin: 20,
     flex: 1,
     backgroundColor: '#fff',
     paddingTop: Constants.statusBarHeight
