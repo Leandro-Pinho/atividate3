@@ -23,13 +23,13 @@ const styles = StyleSheet.create({
       width: 280
     },
     listArea: {
-      backgroundColor: "#f0f0f0",
-      flex: 1,
+      backgroundColor: '#fff',
       paddingTop: 16
     },
     sectionContainer: {
       marginBottom: 16,
-      marginHorizontal: 16
+      marginHorizontal: 16,
+
     },
     sectionHeading: {
       fontSize: 18,
@@ -41,9 +41,6 @@ const styles = StyleSheet.create({
       marginBottom: 20,
       marginLeft: 20,
       flexDirection: 'row'
-    },
-    atrazada: {
-      color: `#000000`
     },
     picker: {
       height: 20,
@@ -58,7 +55,24 @@ const styles = StyleSheet.create({
       position: 'relative',
       top: 10,
       marginRight: 10
+    },
+    containertext: {
+      flexDirection: 'row',
+      marginHorizontal: 20,
+    },
+    
+    index: {
+      color: '#fff',
+      fontSize: 20,
+      
+    },
+    index1: {
+      color: '#fff',
+      fontSize: 20,
+      bottom: 8,
+      left: 10
     }
+
   });
   
   export {styles};

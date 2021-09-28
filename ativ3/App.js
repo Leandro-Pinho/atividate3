@@ -6,7 +6,7 @@ import {Picker} from '@react-native-picker/picker';
 import { styles } from './src/estilo';
 import moment from 'moment';
 
-const db = SQLite.openDatabase('bancoo10.db');
+const db = SQLite.openDatabase('bancoo12.db');
 
 class Items extends Component {
   state = {
@@ -37,17 +37,30 @@ class Items extends Component {
         <Text style={styles.sectionHeading}>
           {heading}
         </Text>
+        
         {items.map(({id, done, value, date, prioridade}) => (
           <TouchableHighlight
             key={id}
             onPress = {() => this.props.onPressItem && this.props.onPressItem(id)} 
-            style={{
-              backgroundColor: done ? "#1c9963" : "#cc0000",
-                   
-              padding: 8
-            }}
+            style={{margin: 2}}
             >
-             <Text style={{ backgroundColor: date < this.ShowCurrentDate() ? "red" : "#fff" }}>{'Tarefa nº: '}{id}{'\nDescrição: '}{value}{'\nPrazo: '}{date}{'\nPrioridade: '}{prioridade}</Text>
+            <View style={{ backgroundColor: date < this.ShowCurrentDate() ?  `#ffefd5` : `#87ceeb`, borderRadius: 12 }}>
+              <View style={styles.containertext}>
+                <View style={{ backgroundColor: done ? "#1c9963" : `#ff6347`,  
+                               borderRadius: 12,
+                               margin: 10,
+                               alignItems: 'center',
+                               justifyContent: 'center',
+                               width: 50,
+                               height: 50,
+                              }}>
+                  <Text style={styles.index}>{id}</Text>
+                </View>
+                <View style={styles.index1}>
+                  <Text >{'\nDescrição: '}{value}{'\nPrazo: '}{date}{'\nPrioridade: '}{prioridade}</Text>
+                </View>
+              </View>
+            </View>
           </TouchableHighlight>
         ))}
       </View>
