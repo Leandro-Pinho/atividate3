@@ -1,10 +1,12 @@
 import React, {Component} from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, View, Button } from 'react-native';
-import  Constants  from 'expo-constants';
 import * as SQLite from 'expo-sqlite';
 import DatePicker from 'react-native-datepicker';
+import {Picker} from '@react-native-picker/picker';
+import { styles } from './src/estilo';
+import moment from 'moment';
 
-const db = SQLite.openDatabase('banco4.db');
+const db = SQLite.openDatabase('bancoo10.db');
 
 class Items extends Component {
   state = {
@@ -13,6 +15,11 @@ class Items extends Component {
   
   componentDidMount(){
     this.update();
+  }
+
+  ShowCurrentDate() {
+    var currentDate = moment().format("DD-MM-YYYY");
+    return currentDate
   }
 
   render(){
@@ -30,20 +37,17 @@ class Items extends Component {
         <Text style={styles.sectionHeading}>
           {heading}
         </Text>
-        {items.map(({id, done, value, date}) => (
+        {items.map(({id, done, value, date, prioridade}) => (
           <TouchableHighlight
-            
             key={id}
             onPress = {() => this.props.onPressItem && this.props.onPressItem(id)} 
             style={{
               backgroundColor: done ? "#1c9963" : "#cc0000",
-              borderColor: "#000",
-              borderColor: 1,
+                   
               padding: 8
             }}
             >
-              
-              <Text style={{ color: done ? "#fff" : "#000" }}>{value}{date}</Text>
+             <Text style={{ backgroundColor: date < this.ShowCurrentDate() ? "red" : "#fff" }}>{'Tarefa nº: '}{id}{'\nDescrição: '}{value}{'\nPrazo: '}{date}{'\nPrioridade: '}{prioridade}</Text>
           </TouchableHighlight>
         ))}
       </View>
@@ -65,6 +69,7 @@ export default class App extends Component {
   state = {
     text: null,
     date: '',
+    prioridade: null
   };
 
   selectDate = (date) => {
@@ -74,45 +79,60 @@ export default class App extends Component {
   componentDidMount(){
     db.transaction(tx => {
       tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS items (id integer primary key not null, done int, value text);`
+        `CREATE TABLE IF NOT EXISTS items (id integer primary key not null, done int, value text, prioridade text, date date);`
       );
     });
   }
 
+  
   render(){
+
+    const prioridade = this.state.prioridade;
+
     return (
       <View style={styles.container}>
         <Text style={styles.heading}>Lista de Tarefas</Text>
         <View style={styles.flexRow}>
           <TextInput style={styles.input}
             onChangeText={text => this.setState({ text })}
-            placeholder="O que eu tenho que fazer?"
+            placeholder="Informe a tarefa?"
             value={this.state.text}
           />
           </View>
-      
-        <View style={{margin: 20}}>
-          <Text>Prazo para fazer</Text>
-          <DatePicker
-            style={{width: 200}}
+          <View style={styles.flexRow}>
+            <Picker 
+              selectedValue={this.state.prioridade}
+              style={styles.picker}
+              onValueChange={ (itemValue) =>
+                this.setState({prioridade: itemValue})
+              }
+            >
+              <Picker.Item label="Pequena" value="Pequena" />
+              <Picker.Item label="Média" value="Média" />
+              <Picker.Item label="Alta" value="Alta" />
+            </Picker>
+            <Text style={styles.pickertext}>Selecione a Prioridade: {prioridade}</Text>
+          </View>      
+        <View style={styles.data}>
+          <Text style={styles.textdata}>Prazo para fazer:</Text>
+          <DatePicker 
+            style={{width: 180}}
             date={this.state.date}
             format="DD-MM-YYYY"
             minDate="10-07-2019"
             onDateChange={this.selectDate}
-            date={this.state.date}
           />
         </View>
         <Button 
           title="Salvar"
           onPress={() => {
-            this.add((this.state.text))
-            this.add((this.state.date))
+            this.add((this.state.text), (this.state.date), (this.state.prioridade))
             this.setState({ text:null })
           }}
         />
             
         <ScrollView style={styles.listArea}>
-          <Items 
+          <Items
             done={false}
             ref={todo => (this.todo = todo)}
             onPressItem={(id) => 
@@ -138,13 +158,13 @@ export default class App extends Component {
     )
   }
 
-  add(text){
+  add(text, date, prioridade){
     if(text === null || text === ""){
       return false
     }
 
     db.transaction(tx => {
-      tx.executeSql(`INSERT INTO items (done, value) VALUES (0,?);`, [text])
+      tx.executeSql(`INSERT INTO items (done, value, date, prioridade) VALUES (0,?,?,?);`, [text, date, prioridade])
       tx.executeSql(`SELECT * FROM items;`, [], (_, {rows}) => console.log(JSON.stringify(rows))
       );
       },null, this.update
@@ -155,42 +175,4 @@ export default class App extends Component {
     this.done && this.done.update();
   };
 }
-const styles = StyleSheet.create({
-  container: {
-    margin: 20,
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: Constants.statusBarHeight
-  },
-  heading: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center'
-  },
-  flexRow: {
-    flexDirection: "row"
-  },
-  input: {
-    borderColor: "#4630eb",
-    borderRadius: 4,
-    borderWidth: 1,
-    flex: 1,
-    height: 48,
-    margin: 16,
-    padding: 8
-  },
-  listArea: {
-    backgroundColor: "#f0f0f0",
-    flex: 1,
-    paddingTop: 16
-  },
-  sectionContainer: {
-    marginBottom: 16,
-    marginHorizontal: 16
-  },
-  sectionHeading: {
-    fontSize: 18,
-    marginBottom: 8,
 
-  }
-});
