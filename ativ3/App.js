@@ -44,9 +44,9 @@ class Items extends Component {
             onPress = {() => this.props.onPressItem && this.props.onPressItem(id)} 
             style={{margin: 2}}
             >
-            <View style={{ backgroundColor: date < this.ShowCurrentDate() ?  `#ffefd5` : `#87ceeb`, borderRadius: 12 }}>
+            <View style={{ backgroundColor: date < this.ShowCurrentDate() ?  `#ff6347` : `#87ceeb`, borderRadius: 12 }}>
               <View style={styles.containertext}>
-                <View style={{ backgroundColor: done ? "#1c9963" : `#ff6347`,  
+                <View style={{ backgroundColor: done ? "#1c9963" : `#ffdab9`,  
                                borderRadius: 12,
                                margin: 10,
                                alignItems: 'center',
